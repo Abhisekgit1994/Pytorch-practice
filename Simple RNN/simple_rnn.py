@@ -29,8 +29,8 @@ class RNN(nn.Module):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.rnn = nn.RNN(input_size, self.hidden_size, self.num_layers, batch_first=True)
-        # N * time_seq * features
+        self.rnn = nn.RNN(self.input_size, self.hidden_size, self.num_layers, batch_first=True)
+        # N * seq_len * features
         self.fc = nn.Linear(self.hidden_size*seq_len, num_classes)
 
     def forward(self, x):
