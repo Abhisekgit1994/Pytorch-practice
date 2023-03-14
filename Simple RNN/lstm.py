@@ -106,36 +106,39 @@ print('******** Printing accuracy for LSTM model ***********')
 accuracy_check(train_loader, model)
 accuracy_check(test_loader, model)
 
-# Epoch [1/2], Step [64/938], Loss: 1.1248
-# Epoch [1/2], Step [128/938], Loss: 0.9319
-# Epoch [1/2], Step [192/938], Loss: 0.5914
-# Epoch [1/2], Step [256/938], Loss: 0.4947
-# Epoch [1/2], Step [320/938], Loss: 0.1279
-# Epoch [1/2], Step [384/938], Loss: 0.3073
-# Epoch [1/2], Step [448/938], Loss: 0.0774
-# Epoch [1/2], Step [512/938], Loss: 0.0777
-# Epoch [1/2], Step [576/938], Loss: 0.1457
-# Epoch [1/2], Step [640/938], Loss: 0.2600
-# Epoch [1/2], Step [704/938], Loss: 0.1813
-# Epoch [1/2], Step [768/938], Loss: 0.2314
-# Epoch [1/2], Step [832/938], Loss: 0.0403
-# Epoch [1/2], Step [896/938], Loss: 0.1433
-# Epoch [2/2], Step [64/938], Loss: 0.0919
-# Epoch [2/2], Step [128/938], Loss: 0.1296
-# Epoch [2/2], Step [192/938], Loss: 0.2145
-# Epoch [2/2], Step [256/938], Loss: 0.1594
-# Epoch [2/2], Step [320/938], Loss: 0.1226
-# Epoch [2/2], Step [384/938], Loss: 0.1002
-# Epoch [2/2], Step [448/938], Loss: 0.1041
-# Epoch [2/2], Step [512/938], Loss: 0.1213
-# Epoch [2/2], Step [576/938], Loss: 0.0274
-# Epoch [2/2], Step [640/938], Loss: 0.0138
-# Epoch [2/2], Step [704/938], Loss: 0.0878
-# Epoch [2/2], Step [768/938], Loss: 0.0505
-# Epoch [2/2], Step [832/938], Loss: 0.0361
-# Epoch [2/2], Step [896/938], Loss: 0.0088
+# **** model progress and output *********
+# Epoch [1/2], Step [64/938], Loss: 0.9352
+# Epoch [1/2], Step [128/938], Loss: 0.7253
+# Epoch [1/2], Step [192/938], Loss: 0.5904
+# Epoch [1/2], Step [256/938], Loss: 0.5197
+# Epoch [1/2], Step [320/938], Loss: 0.1802
+# Epoch [1/2], Step [384/938], Loss: 0.2368
+# Epoch [1/2], Step [448/938], Loss: 0.1548
+# Epoch [1/2], Step [512/938], Loss: 0.3303
+# Epoch [1/2], Step [576/938], Loss: 0.0272
+# Epoch [1/2], Step [640/938], Loss: 0.1656
+# Epoch [1/2], Step [704/938], Loss: 0.0938
+# Epoch [1/2], Step [768/938], Loss: 0.0546
+# Epoch [1/2], Step [832/938], Loss: 0.1305
+# Epoch [1/2], Step [896/938], Loss: 0.1241
+# Epoch [1/2], Step [938/938], Loss: 0.1387
+# Epoch [2/2], Step [64/938], Loss: 0.0620
+# Epoch [2/2], Step [128/938], Loss: 0.1533
+# Epoch [2/2], Step [192/938], Loss: 0.1051
+# Epoch [2/2], Step [256/938], Loss: 0.0325
+# Epoch [2/2], Step [320/938], Loss: 0.0213
+# Epoch [2/2], Step [384/938], Loss: 0.1235
+# Epoch [2/2], Step [448/938], Loss: 0.0987
+# Epoch [2/2], Step [512/938], Loss: 0.0523
+# Epoch [2/2], Step [576/938], Loss: 0.0467
+# Epoch [2/2], Step [640/938], Loss: 0.1857
+# Epoch [2/2], Step [704/938], Loss: 0.0270
+# Epoch [2/2], Step [768/938], Loss: 0.0311
+# Epoch [2/2], Step [832/938], Loss: 0.0750
+# Epoch [2/2], Step [896/938], Loss: 0.0435
+# Epoch [2/2], Step [938/938], Loss: 0.0170
 # ******** Printing accuracy for LSTM model ***********
 # checking accuracy on train data
-# Accuracy is 97.90166473388672
+# Accuracy is 98.2316665649414
 # checking accuracy on test data
-# Accuracy is 97.70999908447266
+# Accuracy is 98.3499984741211
