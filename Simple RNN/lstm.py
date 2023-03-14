@@ -67,7 +67,13 @@ for e in range(epochs):
         loss.backward()
 
         op.step()
-        if (idx + 1) % 64 == 0:
+        if (idx + 1) % batch == 0:
+            print(
+                f"Epoch [{e + 1}/{epochs}], "
+                f"Step [{idx + 1}/{len(train_loader)}], "
+                f"Loss: {loss.item():.4f}"
+            )
+        elif (idx+1) == len(train_loader):
             print(
                 f"Epoch [{e + 1}/{epochs}], "
                 f"Step [{idx + 1}/{len(train_loader)}], "
