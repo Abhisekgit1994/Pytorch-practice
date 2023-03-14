@@ -67,6 +67,12 @@ for e in range(epochs):
         loss.backward()
 
         op.step()
+        if (idx + 1) % 64 == 0:
+            print(
+                f"Epoch [{e + 1}/{epochs}], "
+                f"Step [{idx + 1}/{len(train_loader)}], "
+                f"Loss: {loss.item():.4f}"
+            )
 
 
 def accuracy_check(loader, model):
@@ -94,8 +100,36 @@ print('******** Printing accuracy for LSTM model ***********')
 accuracy_check(train_loader, model)
 accuracy_check(test_loader, model)
 
-# ********Printing accuracy for LSTM model***********
+# Epoch [1/2], Step [64/938], Loss: 1.1248
+# Epoch [1/2], Step [128/938], Loss: 0.9319
+# Epoch [1/2], Step [192/938], Loss: 0.5914
+# Epoch [1/2], Step [256/938], Loss: 0.4947
+# Epoch [1/2], Step [320/938], Loss: 0.1279
+# Epoch [1/2], Step [384/938], Loss: 0.3073
+# Epoch [1/2], Step [448/938], Loss: 0.0774
+# Epoch [1/2], Step [512/938], Loss: 0.0777
+# Epoch [1/2], Step [576/938], Loss: 0.1457
+# Epoch [1/2], Step [640/938], Loss: 0.2600
+# Epoch [1/2], Step [704/938], Loss: 0.1813
+# Epoch [1/2], Step [768/938], Loss: 0.2314
+# Epoch [1/2], Step [832/938], Loss: 0.0403
+# Epoch [1/2], Step [896/938], Loss: 0.1433
+# Epoch [2/2], Step [64/938], Loss: 0.0919
+# Epoch [2/2], Step [128/938], Loss: 0.1296
+# Epoch [2/2], Step [192/938], Loss: 0.2145
+# Epoch [2/2], Step [256/938], Loss: 0.1594
+# Epoch [2/2], Step [320/938], Loss: 0.1226
+# Epoch [2/2], Step [384/938], Loss: 0.1002
+# Epoch [2/2], Step [448/938], Loss: 0.1041
+# Epoch [2/2], Step [512/938], Loss: 0.1213
+# Epoch [2/2], Step [576/938], Loss: 0.0274
+# Epoch [2/2], Step [640/938], Loss: 0.0138
+# Epoch [2/2], Step [704/938], Loss: 0.0878
+# Epoch [2/2], Step [768/938], Loss: 0.0505
+# Epoch [2/2], Step [832/938], Loss: 0.0361
+# Epoch [2/2], Step [896/938], Loss: 0.0088
+# ******** Printing accuracy for LSTM model ***********
 # checking accuracy on train data
-# Accuracy is 98.15333557128906
+# Accuracy is 97.90166473388672
 # checking accuracy on test data
-# Accuracy is 97.94999694824219
+# Accuracy is 97.70999908447266
