@@ -1,3 +1,5 @@
+# reference : https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+
 import numpy as np
 import pandas as pd
 import torch

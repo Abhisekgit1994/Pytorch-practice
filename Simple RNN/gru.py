@@ -1,3 +1,5 @@
+# reference : https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+
 import numpy as np
 import pandas as pd
 import torch
