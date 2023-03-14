@@ -36,4 +36,8 @@ print(x.squeeze(1))
 x = torch.rand((64,1,28,28))
 print(x.squeeze(1).shape)
 
+x = torch.rand((4, 64,256))
+print(x[-1].shape)
+print(torch.cat((x[-1], x[-2]), dim=1).shape)
+
 
