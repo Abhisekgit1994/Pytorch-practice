@@ -22,7 +22,18 @@ batch = 64
 epochs = 2
 
 
-# Create a RNN
+# input_size – The number of expected features in the input x
+#
+# hidden_size – The number of features in the hidden state h
+#
+# num_layers – Number of recurrent layers. E.g., setting num_layers=2 would mean stacking two LSTMs together to form a stacked LSTM, with the second LSTM taking in outputs of the first LSTM and computing the final results. Default: 1
+#
+# bias – If False, then the layer does not use bias weights b_ih and b_hh. Default: True
+#
+# batch_first – If True, then the input and output tensors are provided as (batch, seq, feature) instead of (seq, batch, feature). Note that this does not apply to hidden or cell states. See the Inputs/Outputs sections below for details. Default: False
+
+
+# Create a LSTM with 3 LSTM layers and a fully connected layer
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTM, self).__init__()
@@ -32,12 +43,15 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, self.hidden_size, self.num_layers, batch_first=True)
         # N * time_seq * features
         self.fc = nn.Linear(self.hidden_size, num_classes)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
-        h1 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        c1 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        out, _ = self.lstm(x, (h1, c1))
-        out = self.fc(out[:, -1, :])  # using only the last hidden state output
+        h1 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(device)
+        c1 = torch.randn(self.num_layers, x.size(0), self.hidden_size).to(device)
+        out, (hn, cn) = self.lstm(x, (h1, c1))
+        hn = hn[-1]  # using only the last hidden state output for the linear layer as there are 2 hidden layers
+        out = self.relu(hn)
+        out = self.fc(out)
         return out
 
 
@@ -73,7 +87,7 @@ for e in range(epochs):
                 f"Step [{idx + 1}/{len(train_loader)}], "
                 f"Loss: {loss.item():.4f}"
             )
-        elif (idx+1) == len(train_loader):
+        elif (idx + 1) == len(train_loader):
             print(
                 f"Epoch [{e + 1}/{epochs}], "
                 f"Step [{idx + 1}/{len(train_loader)}], "
