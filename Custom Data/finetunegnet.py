@@ -67,14 +67,14 @@ def train_network(num_epochs):
                     f"Epoch [{e + 1}/{epochs}], "
                     f"Step [{idx + 1}/{len(train_loader)}], "
                     f"Loss: {loss.item():.4f}"
-            )
+                )
             elif (idx + 1) == len(train_loader):
                 print(
                     f"Epoch [{e + 1}/{epochs}], "
                     f"Step [{idx + 1}/{len(train_loader)}], "
                     f"Loss: {loss.item():.4f}"
                 )
-        print("Loss at epoch", e+1, sum(losses)/len(losses))
+        print("Loss at epoch", e + 1, sum(losses) / len(losses))
 
 
 def accuracy_check(loader, model):

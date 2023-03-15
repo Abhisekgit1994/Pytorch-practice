@@ -1,7 +1,5 @@
 # CNN model with custom data
 import os
-from abc import ABC, ABCMeta
-
 import numpy as np
 import pandas as pd
 import torch
