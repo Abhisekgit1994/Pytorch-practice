@@ -24,7 +24,7 @@ lr = 0.001
 batch = 64
 epochs = 4
 D = 2  # bidirectional
-load_model = True
+load_model = False
 
 
 # Create a bidirectional RNN
@@ -54,7 +54,8 @@ class BiLSTM(nn.Module):
         h0 = torch.zeros(self.num_layers * D, x.size(0), self.hidden_size).to(device)
         c0 = torch.zeros(self.num_layers * D, x.size(0), self.hidden_size).to(device)
         out, (hn, cn) = self.b_lstm(x, (h0, c0))
-        hn = torch.cat((hn[-1], hn[-2]), dim=1)  # using last 2 hidden state to feed to linear layer as it is bidirectional as out.shape == (batch, hidden_size * D)
+        hn = torch.cat((hn[-1], hn[-2]), dim=1)  # using last 2 hidden state to feed to linear layer as it is bidirectional as out.shape == (batch, hidden_size * D )
+        hn = self.relu(hn)
         out = self.fc(hn)
         return out
 
@@ -154,73 +155,75 @@ accuracy_check(test_loader, model)
 # Model progress and output for bidirectional LSTM
 # loading checkpoint......
 # ****** training the model********
-# Epoch [1/4], Step [64/938], Loss: 0.2050
-# Epoch [1/4], Step [128/938], Loss: 0.0840
-# Epoch [1/4], Step [192/938], Loss: 0.1165
-# Epoch [1/4], Step [256/938], Loss: 0.0084
-# Epoch [1/4], Step [320/938], Loss: 0.0137
-# Epoch [1/4], Step [384/938], Loss: 0.0427
-# Epoch [1/4], Step [448/938], Loss: 0.0519
-# Epoch [1/4], Step [512/938], Loss: 0.1486
-# Epoch [1/4], Step [576/938], Loss: 0.0113
-# Epoch [1/4], Step [640/938], Loss: 0.0627
-# Epoch [1/4], Step [704/938], Loss: 0.0025
-# Epoch [1/4], Step [768/938], Loss: 0.0208
-# Epoch [1/4], Step [832/938], Loss: 0.0718
-# Epoch [1/4], Step [896/938], Loss: 0.0086
-# Epoch [1/4], Step [938/938], Loss: 0.1559
-# Loss at epoch 1 0.0573388326972443
-# Epoch [2/4], Step [64/938], Loss: 0.0580
-# Epoch [2/4], Step [128/938], Loss: 0.0177
-# Epoch [2/4], Step [192/938], Loss: 0.0262
-# Epoch [2/4], Step [256/938], Loss: 0.0256
-# Epoch [2/4], Step [320/938], Loss: 0.0441
-# Epoch [2/4], Step [384/938], Loss: 0.0179
-# Epoch [2/4], Step [448/938], Loss: 0.0229
-# Epoch [2/4], Step [512/938], Loss: 0.1263
-# Epoch [2/4], Step [576/938], Loss: 0.0227
-# Epoch [2/4], Step [640/938], Loss: 0.0020
-# Epoch [2/4], Step [704/938], Loss: 0.0118
-# Epoch [2/4], Step [768/938], Loss: 0.0066
-# Epoch [2/4], Step [832/938], Loss: 0.0045
-# Epoch [2/4], Step [896/938], Loss: 0.0216
-# Epoch [2/4], Step [938/938], Loss: 0.1338
-# Loss at epoch 2 0.045341174875292725
+# Epoch [1/4], Step [64/938], Loss: 1.0296
+# Epoch [1/4], Step [128/938], Loss: 0.4420
+# Epoch [1/4], Step [192/938], Loss: 0.3037
+# Epoch [1/4], Step [256/938], Loss: 0.1739
+# Epoch [1/4], Step [320/938], Loss: 0.2971
+# Epoch [1/4], Step [384/938], Loss: 0.1947
+# Epoch [1/4], Step [448/938], Loss: 0.2334
+# Epoch [1/4], Step [512/938], Loss: 0.2162
+# Epoch [1/4], Step [576/938], Loss: 0.1475
+# Epoch [1/4], Step [640/938], Loss: 0.0740
+# Epoch [1/4], Step [704/938], Loss: 0.1209
+# Epoch [1/4], Step [768/938], Loss: 0.0282
+# Epoch [1/4], Step [832/938], Loss: 0.2039
+# Epoch [1/4], Step [896/938], Loss: 0.1897
+# Epoch [1/4], Step [938/938], Loss: 0.0605
+# Loss at epoch 1 0.34473418074447526
+# Epoch [2/4], Step [64/938], Loss: 0.0763
+# Epoch [2/4], Step [128/938], Loss: 0.0567
+# Epoch [2/4], Step [192/938], Loss: 0.1380
+# Epoch [2/4], Step [256/938], Loss: 0.0483
+# Epoch [2/4], Step [320/938], Loss: 0.0146
+# Epoch [2/4], Step [384/938], Loss: 0.0509
+# Epoch [2/4], Step [448/938], Loss: 0.0704
+# Epoch [2/4], Step [512/938], Loss: 0.0756
+# Epoch [2/4], Step [576/938], Loss: 0.0253
+# Epoch [2/4], Step [640/938], Loss: 0.0837
+# Epoch [2/4], Step [704/938], Loss: 0.0212
+# Epoch [2/4], Step [768/938], Loss: 0.0419
+# Epoch [2/4], Step [832/938], Loss: 0.1044
+# Epoch [2/4], Step [896/938], Loss: 0.0440
+# Epoch [2/4], Step [938/938], Loss: 0.2186
+# Loss at epoch 2 0.08613043408274952
 # Saving checkpoint......
-# Epoch [3/4], Step [64/938], Loss: 0.0072
-# Epoch [3/4], Step [128/938], Loss: 0.0031
-# Epoch [3/4], Step [192/938], Loss: 0.0532
-# Epoch [3/4], Step [256/938], Loss: 0.0016
-# Epoch [3/4], Step [320/938], Loss: 0.0411
-# Epoch [3/4], Step [384/938], Loss: 0.0026
-# Epoch [3/4], Step [448/938], Loss: 0.0066
-# Epoch [3/4], Step [512/938], Loss: 0.0072
-# Epoch [3/4], Step [576/938], Loss: 0.1365
-# Epoch [3/4], Step [640/938], Loss: 0.0540
-# Epoch [3/4], Step [704/938], Loss: 0.1321
-# Epoch [3/4], Step [768/938], Loss: 0.0631
-# Epoch [3/4], Step [832/938], Loss: 0.0016
-# Epoch [3/4], Step [896/938], Loss: 0.0388
-# Epoch [3/4], Step [938/938], Loss: 0.0581
-# Loss at epoch 3 0.03608403073686824
-# Epoch [4/4], Step [64/938], Loss: 0.0026
-# Epoch [4/4], Step [128/938], Loss: 0.0268
-# Epoch [4/4], Step [192/938], Loss: 0.0218
-# Epoch [4/4], Step [256/938], Loss: 0.0911
-# Epoch [4/4], Step [320/938], Loss: 0.0566
-# Epoch [4/4], Step [384/938], Loss: 0.1525
-# Epoch [4/4], Step [448/938], Loss: 0.0358
-# Epoch [4/4], Step [512/938], Loss: 0.0213
-# Epoch [4/4], Step [576/938], Loss: 0.0364
-# Epoch [4/4], Step [640/938], Loss: 0.0277
-# Epoch [4/4], Step [704/938], Loss: 0.0079
-# Epoch [4/4], Step [768/938], Loss: 0.0029
-# Epoch [4/4], Step [832/938], Loss: 0.2054
-# Epoch [4/4], Step [896/938], Loss: 0.0029
-# Epoch [4/4], Step [938/938], Loss: 0.0015
-# Loss at epoch 4 0.031322088243948894
+# Epoch [3/4], Step [64/938], Loss: 0.0613
+# Epoch [3/4], Step [128/938], Loss: 0.0403
+# Epoch [3/4], Step [192/938], Loss: 0.0224
+# Epoch [3/4], Step [256/938], Loss: 0.0414
+# Epoch [3/4], Step [320/938], Loss: 0.0439
+# Epoch [3/4], Step [384/938], Loss: 0.0263
+# Epoch [3/4], Step [448/938], Loss: 0.0678
+# Epoch [3/4], Step [512/938], Loss: 0.0124
+# Epoch [3/4], Step [576/938], Loss: 0.0621
+# Epoch [3/4], Step [640/938], Loss: 0.0137
+# Epoch [3/4], Step [704/938], Loss: 0.1644
+# Epoch [3/4], Step [768/938], Loss: 0.0114
+# Epoch [3/4], Step [832/938], Loss: 0.0085
+# Epoch [3/4], Step [896/938], Loss: 0.0597
+# Epoch [3/4], Step [938/938], Loss: 0.0047
+# Loss at epoch 3 0.059945101094400405
+# Epoch [4/4], Step [64/938], Loss: 0.0708
+# Epoch [4/4], Step [128/938], Loss: 0.0517
+# Epoch [4/4], Step [192/938], Loss: 0.1512
+# Epoch [4/4], Step [256/938], Loss: 0.0035
+# Epoch [4/4], Step [320/938], Loss: 0.0053
+# Epoch [4/4], Step [384/938], Loss: 0.0028
+# Epoch [4/4], Step [448/938], Loss: 0.0240
+# Epoch [4/4], Step [512/938], Loss: 0.1116
+# Epoch [4/4], Step [576/938], Loss: 0.0724
+# Epoch [4/4], Step [640/938], Loss: 0.0346
+# Epoch [4/4], Step [704/938], Loss: 0.0041
+# Epoch [4/4], Step [768/938], Loss: 0.0823
+# Epoch [4/4], Step [832/938], Loss: 0.0713
+# Epoch [4/4], Step [896/938], Loss: 0.0111
+# Epoch [4/4], Step [938/938], Loss: 0.0035
+# Loss at epoch 4 0.04647512664595968
 # ******** Printing accuracy for Bidirectional LSTM model ***********
 # checking accuracy on train data
-# Accuracy is 98.961669921875
+# Accuracy is 99.09666442871094
 # checking accuracy on test data
-# Accuracy is 98.33999633789062
+# Accuracy is 98.85999298095703
+
+
