@@ -54,7 +54,7 @@ class BiLSTM(nn.Module):
         h0 = torch.zeros(self.num_layers * D, x.size(0), self.hidden_size).to(device)
         c0 = torch.zeros(self.num_layers * D, x.size(0), self.hidden_size).to(device)
         out, (hn, cn) = self.b_lstm(x, (h0, c0))
-        hn = torch.cat((hn[-1], hn[-2]), dim=1)  # using last 2 hidden state to feed to linear layer as it is bidirectional as out.shape == (batch, hidden_size * D )
+        hn = torch.cat((hn[-1], hn[-2]), dim=1)  # using last 2 hidden state to feed to linear layer as it is bidirectional as out.shape == (batch, hidden_size * D)
         hn = self.relu(hn)
         out = self.fc(hn)
         return out
