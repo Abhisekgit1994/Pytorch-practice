@@ -16,7 +16,7 @@ data_dir = 'cats_dogs/'
 annotations = []
 for file in os.listdir(data_dir):
     if 'cat' in file:
-        annotations.append({'filename':file, 'label':0})
+        annotations.append({'filename':file, 'label': 0})
     if 'dog' in file:
         annotations.append({'filename': file, 'label': 1})
 

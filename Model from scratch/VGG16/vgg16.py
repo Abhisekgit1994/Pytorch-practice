@@ -1,5 +1,4 @@
 import time
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,7 +17,6 @@ in_channels = 3
 lr = 0.001
 batch = 8
 epochs = 1
-
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -70,8 +68,6 @@ class VGG16(nn.Module):
 
 
 model = VGG16().to(device)
-
-
 # x = torch.rand((4, 3, 224, 224))
 # x = x.to(device)
 # print(model(x).shape)
