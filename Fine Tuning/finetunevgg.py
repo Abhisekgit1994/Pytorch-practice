@@ -60,11 +60,11 @@ model.classifier = nn.Sequential(
 model.to(device)
 
 # load data
-# train_data = datasets.CIFAR10(root='../datasets/', download=True, train=True, transform=transforms.ToTensor())
-# train_loader = DataLoader(train_data, batch_size=batch, shuffle=True)
-# test_data = datasets.CIFAR10(root='../datasets/', download=True, train=False, transform=transforms.ToTensor())
-# test_loader = DataLoader(test_data, batch_size=batch, shuffle=True)
-# print(len(train_data))
+train_data = datasets.CIFAR10(root='../datasets/', download=True, train=True, transform=transforms.ToTensor())
+train_loader = DataLoader(train_data, batch_size=batch, shuffle=True)
+test_data = datasets.CIFAR10(root='../datasets/', download=True, train=False, transform=transforms.ToTensor())
+test_loader = DataLoader(test_data, batch_size=batch, shuffle=True)
+print(len(train_data))
 
 # loss and optimizer
 criterion = nn.CrossEntropyLoss()

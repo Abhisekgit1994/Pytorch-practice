@@ -23,6 +23,7 @@ for file in os.listdir(data_dir):
 df = pd.DataFrame(annotations)
 df.to_csv('annotations.csv')
 
+
 class CustomDataset(Dataset):
     def __init__(self, csv_file, root_dir, transform=None):
         self.annotation = pd.read_csv(csv_file)
