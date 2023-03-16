@@ -177,6 +177,6 @@ if __name__ == '__main__':
 # Epoch [1/1], Step [6248/6250], Loss: 2.1535, iteration: 781, time: 0.11(s),
 # Epoch [1/1], Step [6250/6250], Loss: 2.1855iteration: 781, time: 0.11(s),
 # Loss at epoch 1 2.198171835727692
-# ******** Printing accuracy for LeNet model ***********
+# ******** Printing accuracy for VGG16 model ***********
 # checking accuracy on test data
 # Accuracy is 30.059999465942383
