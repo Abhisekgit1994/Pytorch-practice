@@ -155,7 +155,7 @@ def check_accuracy(loader, model):
 def main():
     print("****** training the model********")
     train_network(epochs)
-    print('******** Printing accuracy for LeNet model ***********')
+    print('******** Printing accuracy for VGG16 model ***********')
     # check_accuracy(train_loader, model)
     check_accuracy(test_loader, model)
 
