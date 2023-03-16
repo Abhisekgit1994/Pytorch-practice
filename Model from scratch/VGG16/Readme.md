@@ -1,8 +1,6 @@
 
 # => VGG16 Architecture
-![vgg16.jpg](vgg16.jpg)
 # => VGG16 Layers
-![vgg16layers.jpg](vgg16layers.jpg)
 ### VGG16 implementation from scratch with PyTorch :
 
 → 2 x Convolution layer of 64 channel of 3x3 kernel and same padding
