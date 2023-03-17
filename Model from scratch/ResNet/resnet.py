@@ -38,7 +38,7 @@ class ResNet50(nn.Module): # layers : [3*3, 4*3, 6*3 ,3*3]
         self.layer3 = self._make_layer(block, layers[2], out_channels=256, stride=2)
         self.layer4 = self._make_layer(block, layers[3], out_channels=512, stride=2)
 
-        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(2048, num_classes)
 
     def forward(self, x):
@@ -99,7 +99,7 @@ class res_block(nn.Module):
 
 
 def create_ResNet(image_channels=3, num_classes=1000):
-    return ResNet50(res_block, [3,4,6,3], image_channels, num_classes)
+    return ResNet50(res_block, [3, 4, 6, 3], image_channels, num_classes)
 
 
 model = create_ResNet().to(device)
