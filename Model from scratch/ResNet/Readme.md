@@ -3,7 +3,7 @@
 ![resnetflow.png](resnetflow.png)
 
 
-### Model mode output shape
+### Model output shape
 
 torch.Size([4, 1000])
 
