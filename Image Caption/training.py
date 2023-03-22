@@ -22,7 +22,7 @@ transform = transforms.Compose([
 train_loader, dataset = data_loader(root_dir='../../flickr8k/Images', caption_file='../../flickr8k/captions.txt',
                                     transform=transform,
                                     num_workers=2,
-                                    batch_size=16
+                                    batch_size=32
                                     )
 
 # hyper parameters
@@ -34,7 +34,7 @@ lr = 4e-4
 epochs = 100
 
 # tensorboard
-writer = SummaryWriter('progress/flickr/')
+writer = SummaryWriter('progress')
 
 # load model
 model = EncoderToDecoder(embed_size, hidden_size, vocab_size, num_layers).to(device)
