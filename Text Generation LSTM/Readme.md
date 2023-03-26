@@ -1,4 +1,4 @@
-# Generate Characters to make person names
+# Generate Characters for to make person names
 
 ### Python, LSTM, PyTorch
 Download names dataset from https://dlsun.github.io/pods/data/names/
