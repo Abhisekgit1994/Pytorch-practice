@@ -11,25 +11,38 @@ i : used for mapping to column indices 0 <= i <= d/2 or 0<= i <= d
 """
 
 import numpy as np
+import torch
+import torch.nn as nn
+
+
+class PositionalEmbedding(nn.Module):
+    def __init__(self, seq_len, embed_size, n=10000):
+        """
+
+        :param seq_len: length of input sequence
+        :param embed_size: embedding size
+        """
+        super(PositionalEmbedding, self).__init__()
+        self.embed_size = embed_size
+        pe = np.zeros((seq_len, self.embed_size))
+        for k in range(seq_len):
+            for i in np.arange(0, d, 2):
+                deno = np.power(n, 2 * i / d)
+                pe[k, i] = np.sin(k / deno)
+                pe[k, i + 1] = np.cos(k / deno)
+        pe = pe.unsqueeze(0)
+
+    def forward(self, x):
+        return self.pe[:, :x.shape(1)]
 
 
 def createPositionalEncoding(seq_len, d, n=10000):
-    P = np.zeros((seq_len, d))
-    for k in range(seq_len):
+    pe = np.zeros((seq_len, d))
+    for p in range(seq_len):
         for i in np.arange(int(d / 2)):
             deno = np.power(n, 2 * i / d)
-            P[k, 2 * i] = np.sin(k / deno)
-            P[k, 2 * i + 1] = np.cos(k / deno)
-    return P
-
-
-def createPositionalEncoding2(seq_len, d, n=10000):
-    P = np.zeros((seq_len, d))
-    for k in range(seq_len):
-        for i in np.arange(0, d, 2):
-            deno = np.power(n, 2 * i / d)
-            P[k, i] = np.sin(k / deno)
-            P[k, i + 1] = np.cos(k / deno)
+            pe[k, 2 * i] = np.sin(p / deno)
+            pe[k, 2 * i + 1] = np.cos(p / deno)
     return P
 
 

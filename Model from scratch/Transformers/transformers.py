@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.nn.functional as fn
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from pos_encoding import createPositionalEncoding
+from pos_encoding import PositionalEmbedding
 
 
 class SelfAttention(nn.Module):
@@ -78,7 +78,7 @@ class TransformerBlock(nn.Module):
 
 
 class Encoder(nn.Module):
-
+    def __init__(self):
 
 
 
