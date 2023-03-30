@@ -44,13 +44,13 @@ class SelfAttention(nn.Module):
         first_step = torch.einsum("nhqk", [queries, keys])  # (N * num_heads, len_que, len_key)
 
         if mask is not None:
-            first_step = first_step.masked_fill(mask==0, float("-1e20"))
+            first_step = first_step.masked_fill(mask == 0, float("-1e20"))
 
         attention = torch.softmax(first_step / self.embed_size ** (1 / 2), dim=3)
 
-        out = torch.einsum([attention, values]).reshape(N, len_que, self.num_heads* self.head_dims)
+        out = torch.einsum([attention, values]).reshape(N, len_que, self.num_heads * self.head_dims)
 
-        out = self.fc_out(out) # (N * len_que, embed_size)
+        out = self.fc_out(out)  # (N * len_que, embed_size)
 
         return out
 
