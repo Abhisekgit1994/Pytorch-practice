@@ -47,12 +47,37 @@ class SelfAttention(nn.Module):
             first_step = first_step.masked_fill(mask == 0, float("-1e20"))
 
         attention = torch.softmax(first_step / self.embed_size ** (1 / 2), dim=3)
-
+        # Collapse the Head dimension by reshaping to (Batch, Sequence, Head * Query size). This effectively concatenates the Attention Score vectors for each head into a single merged Attention Score.
         out = torch.einsum([attention, values]).reshape(N, len_que, self.num_heads * self.head_dims)
 
         out = self.fc_out(out)  # (N * len_que, embed_size)
 
         return out
+
+
+class TransformerBlock(nn.Module):
+    def __init__(self, embed_size, num_heads, dropout, expansion_factor):
+        super(TransformerBlock, self).__init__()
+        self.attention = SelfAttention(embedding_size=embed_size, num_heads=num_heads)
+        self.norm1 = nn.LayerNorm(embed_size)
+        self.norm2 = nn.LayerNorm(embed_size)
+
+        self.feed_forward = nn.Sequential(
+            nn.Linear(embed_size, embed_size*expansion_factor),
+            nn.ReLU(),
+            nn.Linear(embed_size*expansion_factor, embed_size)
+        )
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, query, key, value, mask):
+        attention = self.attention(query, key, value, mask)
+        x = self.dropout(self.norm1(attention + query))  # skip connection for 1st step to the layer norm
+        forward = self.feed_forward(x)
+        out = self.dropout(self.norm2([forward + x]))  # 2nd skip connection to the 2nd layer norm
+        return out
+
+
+class Encoder(nn.Module):
 
 
 
