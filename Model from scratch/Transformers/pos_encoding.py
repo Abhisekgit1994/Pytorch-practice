@@ -31,6 +31,7 @@ class PositionalEmbedding(nn.Module):
                 pe[k, i] = np.sin(k / deno)
                 pe[k, i + 1] = np.cos(k / deno)
         pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)  # If you have parameters in your model, which should be saved and restored in the state_dict, but not trained by the optimizer, you should register them as buffers.
 
     def forward(self, x):
         return self.pe[:, :x.shape(1)]
