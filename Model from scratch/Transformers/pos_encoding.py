@@ -16,7 +16,7 @@ import torch.nn as nn
 
 
 class PositionalEmbedding(nn.Module):
-    def __init__(self, seq_len, embed_size, n=10000):
+    def __init__(self, max_len, embed_size, n=10000):
         """
 
         :param seq_len: length of input sequence
@@ -24,35 +24,44 @@ class PositionalEmbedding(nn.Module):
         """
         super(PositionalEmbedding, self).__init__()
         self.embed_size = embed_size
-        pe = np.zeros((seq_len, self.embed_size))
-        for k in range(seq_len):
-            for i in np.arange(0, d, 2):
-                deno = np.power(n, 2 * i / d)
+        self.max_len = max_len
+        pe = np.zeros((self.max_len, self.embed_size))
+        for k in range(self.max_len):
+            for i in np.arange(0, embed_size, 2):
+                deno = np.power(n, 2 * i / embed_size)
                 pe[k, i] = np.sin(k / deno)
                 pe[k, i + 1] = np.cos(k / deno)
+        pe = torch.tensor(pe)
+        print(pe.shape)
         pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)  # If you have parameters in your model, which should be saved and restored in the state_dict, but not trained by the optimizer, you should register them as buffers.
 
     def forward(self, x):
-        return self.pe[:, :x.shape(1)]
+        """
+
+        :param x: Input embedding
+        :return: Combine input with positional embedding and return
+        """
+        x = x + torch.autograd.Variable(self.pe[:, :self.max_len], requires_grad=False)
+        return x
 
 
-def createPositionalEncoding(seq_len, d, n=10000):
-    pe = np.zeros((seq_len, d))
-    for p in range(seq_len):
-        for i in np.arange(int(d / 2)):
-            deno = np.power(n, 2 * i / d)
-            pe[k, 2 * i] = np.sin(p / deno)
-            pe[k, 2 * i + 1] = np.cos(p / deno)
-    return P
-
-
-p = createPositionalEncoding(4, 6)
-print('****** Position encoding with i : range(0,d/2) *******')
-print(p)
-print('****** Position encoding with i : range(0, d, 2) ******')
-p = createPositionalEncoding2(4, 6)
-print(p)
+# def createPositionalEncoding(seq_len, d, n=10000):
+#     pe = np.zeros((seq_len, d))
+#     for p in range(seq_len):
+#         for i in np.arange(int(d / 2)):
+#             deno = np.power(n, 2 * i / d)
+#             pe[k, 2 * i] = np.sin(p / deno)
+#             pe[k, 2 * i + 1] = np.cos(p / deno)
+#     return P
+#
+#
+# p = createPositionalEncoding(4, 6)
+# print('****** Position encoding with i : range(0,d/2) *******')
+# print(p)
+# print('****** Position encoding with i : range(0, d, 2) ******')
+# p = createPositionalEncoding2(4, 6)
+# print(p)
 
 # ****** Position encoding with i : range(0,d/2) ******* d dimensional vector
 # [[ 0.          1.          0.          1.          0.          1.        ]

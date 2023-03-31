@@ -97,16 +97,23 @@ class Encoder(nn.Module):
         self.expansion_factor = expansion_factor
         self.max_length = max_length
         self.word_embedding = nn.Embedding(self.vocab_size, self.embed_size)
-        self.positional_embedding = PositionalEmbedding(seq_len=max_length, embed_size=self.embed_size)
+        self.positional_embedding = PositionalEmbedding(max_len=max_length, embed_size=self.embed_size)
 
         self.layers = nn.ModuleList([
             TransformerBlock(embed_size=self.embed_size, num_heads=self.num_heads, dropout=dropout, expansion_factor=self.expansion_factor)
+            for i in range(self.num_layers)
 
         ])
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, mask):
-        pass
+        N, seq_len = x.shape
+        x = self.word_embedding(x)
+        out = self.positional_embedding(x)
+        for layer in self.num_layers:
+            out = layer(out, out, out, mask)
+
+        return out
 
 
 
