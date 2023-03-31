@@ -111,7 +111,7 @@ class Encoder(nn.Module):
         x = self.word_embedding(x)
         out = self.positional_embedding(x)
         for layer in self.num_layers:
-            out = layer(out, out, out, mask)
+            out = layer(out, out, out, mask)  # input to the transformer block query, key, and value is out : input embedding + positional encoding
 
         return out
 
