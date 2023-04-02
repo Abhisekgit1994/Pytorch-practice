@@ -100,7 +100,7 @@ class Encoder(nn.Module):
         self.max_length = max_length
         self.seq_len = seq_len
         self.word_embedding = nn.Embedding(self.vocab_size, self.embed_size)
-        self.positional_embedding = PositionalEmbedding(seq_len=self.seq_len, embed_size=self.embed_size)
+        self.positional_embedding = PositionalEmbedding(max_len=self.max_length, embed_size=self.embed_size)
 
         self.layers = nn.ModuleList([
             TransformerBlock(embed_size=self.embed_size, num_heads=self.num_heads, dropout=dropout, expansion_factor=self.expansion_factor)
@@ -147,7 +147,7 @@ class Decoder(nn.Module):
         self.positional_encoding = PositionalEmbedding(self.seq_len, embed_size)
 
         self.layers = nn.ModuleList([
-            DecoderBlock(embed_size, num_heads, expansion_factor, dropout,device) for _ in range(num_layers)
+            DecoderBlock(embed_size, num_heads, expansion_factor, dropout, device) for _ in range(num_layers)
         ])
 
         self.fc_out = nn.Linear(embed_size, target_vocab_size)
@@ -156,7 +156,7 @@ class Decoder(nn.Module):
     def forward(self, x, enc_out, source_mask, target_mask):
         N, seq_len = x.shape
         x = self.word_embedding(x)
-        x = self.positional_encoding(x)
+        x = self.dropout(self.positional_encoding(x))
         for layer in self.layers:
             x = layer(x, enc_out, enc_out, source_mask, target_mask)
 
