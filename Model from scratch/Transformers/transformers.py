@@ -224,6 +224,8 @@ if __name__ == "__main__":
     print(out.shape)
 
 
+# output : torch.Size([2, 7, 10])
+
 
 
 
