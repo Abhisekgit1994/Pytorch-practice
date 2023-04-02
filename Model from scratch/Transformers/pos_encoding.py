@@ -16,7 +16,7 @@ import torch.nn as nn
 
 
 class PositionalEmbedding(nn.Module):
-    def __init__(self, max_len, embed_size, n=10000):
+    def __init__(self, seq_len, embed_size, n=10000):
         """
 
         :param seq_len: length of input sequence
@@ -24,15 +24,15 @@ class PositionalEmbedding(nn.Module):
         """
         super(PositionalEmbedding, self).__init__()
         self.embed_size = embed_size
-        self.max_len = max_len
+        self.max_len = seq_len
         pe = np.zeros((self.max_len, self.embed_size))
         for k in range(self.max_len):
             for i in np.arange(0, embed_size, 2):
                 deno = np.power(n, 2 * i / embed_size)
                 pe[k, i] = np.sin(k / deno)
                 pe[k, i + 1] = np.cos(k / deno)
+        pe = np.array(pe, dtype=np.float32)
         pe = torch.tensor(pe)
-        print(pe.shape)
         pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)  # If you have parameters in your model, which should be saved and restored in the state_dict, but not trained by the optimizer, you should register them as buffers.
 
