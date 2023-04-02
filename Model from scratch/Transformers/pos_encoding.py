@@ -42,7 +42,8 @@ class PositionalEmbedding(nn.Module):
         :param x: Input embedding
         :return: Combine input with positional embedding and return
         """
-        x = x + torch.autograd.Variable(self.pe[:, :self.max_len], requires_grad=False)
+        seq_len = x.size(1)
+        x = x + torch.autograd.Variable(self.pe[:, :seq_len], requires_grad=False)
         return x
 
 

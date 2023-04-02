@@ -142,7 +142,7 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
         self.device = device
         self.seq_len = seq_len
-        self.seq_len = 7
+        # self.seq_len = 7
         self.word_embedding = nn.Embedding(target_vocab_size, embed_size)
         self.positional_encoding = PositionalEmbedding(self.seq_len, embed_size)
 
@@ -186,7 +186,7 @@ class Transformer(nn.Module):
 
     def make_target_mask(self, target):
         N, target_len = target.shape
-        target_mask = torch.tril(torch.ones((target_len, target_len)).expand(N,1,target_len,target_len))
+        target_mask = torch.tril(torch.ones((target_len, target_len)).expand(N, 1, target_len,target_len))
 
         return target_mask.to(device)
 
