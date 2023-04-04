@@ -36,9 +36,11 @@ token_transform[TARGET_LANG] = get_tokenizer('spacy', language='en_core_web_sm')
 
 
 def yield_tokens(data_iter, language):
-    language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}
+    language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}  # based on the language input extract sentences according to the language
+    # data has de and english sentences in a tuple, so de is at 0th index, english 1st
 
     for data in data_iter:
+        print(data)
         yield token_transform[language](data[language_index[language]])
 
 
@@ -48,10 +50,12 @@ special_symbols = ['<PAD>', '<UNK>', '<SOS>', '<EOS>']
 for lang in [SOURCE_LANG, TARGET_LANG]:
     # train data iterator
     train_iter = Multi30k(split='train', language_pair=(SOURCE_LANG, TARGET_LANG))
+    print(type(train_iter))
     # create torch text's vocab object
     vocab_transform[lang] = build_vocab_from_iterator(yield_tokens(train_iter, lang), min_freq=1, specials=special_symbols, special_first=True)
 
 for lang in [SOURCE_LANG, TARGET_LANG]:
+    # If not set, it throws RuntimeError when the queried token is not found in the Vocabulary.
     vocab_transform[lang].set_default_index(UNK)
 
 print(vocab_transform)
