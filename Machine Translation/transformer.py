@@ -36,11 +36,9 @@ token_transform[TARGET_LANG] = get_tokenizer('spacy', language='en_core_web_sm')
 
 
 def yield_tokens(data_iter, language):
-    language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}  # based on the language input extract sentences according to the language
-    # data has de and english sentences in a tuple, so de is at 0th index, english 1st
+    language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}
 
     for data in data_iter:
-        print(data)
         yield token_transform[language](data[language_index[language]])
 
 
@@ -50,12 +48,10 @@ special_symbols = ['<PAD>', '<UNK>', '<SOS>', '<EOS>']
 for lang in [SOURCE_LANG, TARGET_LANG]:
     # train data iterator
     train_iter = Multi30k(split='train', language_pair=(SOURCE_LANG, TARGET_LANG))
-    print(type(train_iter))
     # create torch text's vocab object
     vocab_transform[lang] = build_vocab_from_iterator(yield_tokens(train_iter, lang), min_freq=1, specials=special_symbols, special_first=True)
 
 for lang in [SOURCE_LANG, TARGET_LANG]:
-    # If not set, it throws RuntimeError when the queried token is not found in the Vocabulary.
     vocab_transform[lang].set_default_index(UNK)
 
 print(vocab_transform)
@@ -77,7 +73,7 @@ class TranslationTransformer(nn.Module):
         super(TranslationTransformer, self).__init__()
 
         self.transformer = nn.Transformer(d_model=embed_size, nhead=num_heads, num_encoder_layers=num_enc_layers, num_decoder_layers=num_dec_layers, dim_feedforward=dim_feedforward, dropout=dropout)
-        self.output = nn.Linear(embed_size, target_vocab_size)
+        self.output = nn.Linear(embed_size, target_vocab_size)  # use to convert embed size to number of vocab in the language
 
         self.source_embedding = nn.Embedding(source_vocab_size, embed_size)
         self.target_embedding = nn.Embedding(target_vocab_size, embed_size)
@@ -94,10 +90,11 @@ class TranslationTransformer(nn.Module):
         return out
 
     def encode(self, source, source_mask):
+        # print(help(self.transformer.encoder))
         return self.transformer.encoder(self.positional_embedding(self.source_embedding(source)), source_mask)
 
     def decode(self, target, memory, target_mask):
-        return self.transformer.decoder(self.positional_embedding(self.source_embedding(source)), memory, target_mask)
+        return self.transformer.decoder(self.positional_embedding(self.target_embedding(target)), memory, target_mask)
 
 
 def generate_square_subsequent_mask(size):
@@ -125,8 +122,8 @@ EMB_SIZE = 512
 N_HEADS = 8
 FFN_HID_DIM = 512
 BATCH_SIZE = 128
-NUM_ENCODER_LAYERS = 3
-NUM_DECODER_LAYERS = 3
+NUM_ENCODER_LAYERS = 6
+NUM_DECODER_LAYERS = 6
 
 print(SRC_VOCAB_SIZE)
 
@@ -152,6 +149,7 @@ def sequential_transforms(*transforms):
         for transform in transforms:
             text_input = transform(text_input)
         return text_input
+
     return func
 
 
@@ -168,8 +166,8 @@ def collate_fn(batch):
         source_batch.append(text_transform[SOURCE_LANG](source.rstrip("\n")))
         target_batch.append(text_transform[TARGET_LANG](target.rstrip("\n")))
 
-    source_batch = pad_sequence(source_batch, padding_value=PAD, batch_first=True)
-    target_batch = pad_sequence(target_batch, padding_value=PAD, batch_first=True)
+    source_batch = pad_sequence(source_batch, padding_value=PAD, batch_first=False)
+    target_batch = pad_sequence(target_batch, padding_value=PAD, batch_first=False)
 
     return source_batch, target_batch
 
@@ -189,7 +187,6 @@ def train_epoch(model, optimizer):
         target = target.to(DEVICE)
 
         target_in = target[:-1, :]  # not taking the last column so that we will predict that using our model
-        print(target_in.shape)
         source_mask, target_mask, source_padding_mask, target_padding_mask = create_mask(source, target_in)
         logits = model(source, target_in, source_mask, target_mask, source_padding_mask, target_padding_mask, source_padding_mask)
 
@@ -223,13 +220,74 @@ def evaluate(model):
     return losses / len(list(valid_loader))
 
 
-NUM_EPOCHS = 18
+load_model = False
 
-for epoch in range(1, NUM_EPOCHS+1):
-    start_time = timer()
-    train_loss = train_epoch(transformer, optimizer)
-    end_time = timer()
-    val_loss = evaluate(transformer)
-    print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s"))
 
+def load_checkpoint(checkpoint):
+    print("Loading checkpoint.....")
+    transformer.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+
+
+if not load_model:
+    NUM_EPOCHS = 15
+    running_loss = float('inf')
+    for epoch in range(1, NUM_EPOCHS + 1):
+        start_time = timer()
+        train_loss = train_epoch(transformer, optimizer)
+        end_time = timer()
+        val_loss = evaluate(transformer)
+        print(f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s")
+        if val_loss < running_loss:
+            print(f"running loss: {running_loss}, Val loss: {val_loss:.3f}")
+            print("Saving checkpoint.......")
+            checkpoint = {'state_dict': transformer.state_dict(), 'optimizer': optimizer.state_dict()}
+            torch.save(checkpoint, 'my_model.pth.tar')
+            running_loss = val_loss
+
+    else:
+        load_checkpoint(torch.load('my_model.pth.tar'))
+
+
+def greedy_decode(model, source, source_mask, max_len, start_symbol):
+    source = source.to(DEVICE)
+    source_mask = source_mask.to(DEVICE)
+
+    memory = transformer.encode(source, source_mask)
+
+    ys = torch.ones(1, 1).fill_(start_symbol).type(torch.long).to(DEVICE)
+    for i in range(max_len - 1):
+        memory = memory.to(DEVICE)
+
+        target_mask = generate_square_subsequent_mask(ys.size(0)).type(torch.bool).to(DEVICE)
+
+        out = model.decode(ys, memory, target_mask)
+        out = out.transpose(0, 1)
+        probs = model.output(out[:, -1])
+        _, next_word = torch.max(probs, dim=1)
+        next_word = next_word.item()
+
+        ys = torch.cat([ys,
+                        torch.ones(1, 1).type_as(source.data).fill_(next_word)], dim=0)
+        if next_word == EOS:
+            break
+    return ys
+
+
+# function to translate input to target
+def translate(model, source_sent):
+    model.eval()
+    source = text_transform[SOURCE_LANG](source_sent).view(-1, 1)
+
+    num_tokens = source.shape[0]
+
+    source_mask = torch.zeros((num_tokens, num_tokens)).type(torch.bool)
+
+    target_tokens = greedy_decode(model, source, source_mask, max_len=num_tokens + 5, start_symbol=SOS).flatten()
+
+    return " ".join(vocab_transform[TARGET_LANG].lookup_tokens(list(target_tokens.cpu().numpy()))).replace("<SOS>", "").replace("<EOS>", "")
+
+
+if __name__ == '__main__':
+    print(translate(transformer, "Eine Gruppe von Menschen steht vor einem Iglu ."))
 
