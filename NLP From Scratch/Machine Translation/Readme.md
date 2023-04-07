@@ -1,1 +1,1 @@
-# Machine Translation using Seq-Seq LSTM
+# Machine Translation using transformers from French and Hindi to English
