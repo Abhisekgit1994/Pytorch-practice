@@ -39,6 +39,7 @@ def yield_tokens(data_iter, language):
     language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}
 
     for data in data_iter:
+        print(data)
         yield token_transform[language](data[language_index[language]])
 
 
