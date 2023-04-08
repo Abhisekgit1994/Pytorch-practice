@@ -23,8 +23,8 @@ import math, joblib
 from timeit import default_timer as timer
 from inltk.inltk import setup
 from pos_encoding import PositionalEmbedding
-from transformer import TokenEmbedding
-from transformer import TranslationTransformer
+# from transformer import TokenEmbedding
+# from transformer import TranslationTransformer, tensor_transform, sequential_transforms, create_mask, generate_square_subsequent_mask
 
 setup('hi')
 
@@ -43,7 +43,6 @@ token_transform = {SOURCE_LANG: tokenize, TARGET_LANG: get_tokenizer('spacy', la
 def yield_tokens(data_iter, lang):
     language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}
     for i, data in enumerate(data_iter):
-        print(i)
         if lang == SOURCE_LANG:
             temp = token_transform[lang](data[language_index[lang]], lang)
             temp = [x.replace('▁', '') for x in temp if '▁' in x]  # to replace space in hindi strings
@@ -67,9 +66,37 @@ with open('vocab.pkl', 'wb') as file:
     pickle.dump(vocab_transform, file)
     
 """
-with open('vocab.pkl', 'rb') as file:
+with open('D:/Abhi/COURSERA/Machine Transalation Models/Hindi To English/vocab/vocab.pkl', 'rb') as file:
     vocab_transform = pickle.load(file)
 
 # print(vocab_transform['hi'].get_stoi())
+# print(vocab_transform['en'].get_stoi())
+# text_transform = {}
+# for lang in [SOURCE_LANG, TARGET_LANG]:
+#     text_transform[lang] = sequential_transforms(token_transform[lang], vocab_transform[lang], tensor_transform)
+#
+#
+# def collate_fn(batch):
+#     source_batch, target_batch = [], []
+#     for source, target in batch:
+#         source_batch.append(text_transform[SOURCE_LANG](source.replace("▁", " ").rstrip("\n")))
+#         target_batch.append(text_transform[TARGET_LANG](target.rstrip("\n")))
+#
+#     source_batch = pad_sequence(source_batch, padding_value=PAD, batch_first=False)
+#     target_batch = pad_sequence(target_batch, padding_value=PAD, batch_first=False)
+#
+#     return source_batch, target_batch
+
+
+SRC_VOCAB_SIZE = len(vocab_transform[SOURCE_LANG])
+TGT_VOCAB_SIZE = len(vocab_transform[TARGET_LANG])
+EMB_SIZE = 512
+N_HEADS = 8
+FFN_HID_DIM = 512
+BATCH_SIZE = 128
+NUM_ENCODER_LAYERS = 6
+NUM_DECODER_LAYERS = 6
+
+print(TGT_VOCAB_SIZE)
 
 

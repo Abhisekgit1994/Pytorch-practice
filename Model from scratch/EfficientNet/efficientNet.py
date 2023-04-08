@@ -79,7 +79,6 @@ class SqueezeExcitation(nn.Module):
         return out
 
 
-
 class InvertedResidual(nn.Module):
     def __init__(self, in_channel, out_channels, kernel_size, stride, padding, expansion_ratio, reduction=4):
         """
@@ -99,8 +98,8 @@ class InvertedResidual(nn.Module):
         hidden_dim = in_channel* expansion_ratio
         self.expand = in_channel != hidden_dim
         reduced_dim = int(in_channel/ reduction)
-        if
+
 
 class EfficientNet(nn.Module):
-
+    pass
 

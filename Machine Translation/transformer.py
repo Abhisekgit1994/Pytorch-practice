@@ -39,7 +39,6 @@ def yield_tokens(data_iter, language):
     language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}
 
     for data in data_iter:
-        print(data)
         yield token_transform[language](data[language_index[language]])
 
 
@@ -158,7 +157,7 @@ text_transform = {}
 for lang in [SOURCE_LANG, TARGET_LANG]:
     text_transform[lang] = sequential_transforms(token_transform[lang], vocab_transform[lang], tensor_transform)
 
-print(text_transform[SOURCE_LANG])
+# print(text_transform[SOURCE_LANG])
 
 
 def collate_fn(batch):
