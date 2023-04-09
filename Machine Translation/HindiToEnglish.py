@@ -89,16 +89,16 @@ def collate_fn(batch):
     return source_batch, target_batch
 
 
-SRC_VOCAB_SIZE = len(vocab_transform[SOURCE_LANG])
-TGT_VOCAB_SIZE = len(vocab_transform[TARGET_LANG])
-EMB_SIZE = 512
+SOURCE_VOCAB_SIZE = len(vocab_transform[SOURCE_LANG])
+TARGET_VOCAB_SIZE = len(vocab_transform[TARGET_LANG])
+EMBED_SIZE = 512
 N_HEADS = 8
-FFN_HID_DIM = 512
+FFN_HID_DIM = 2048
 BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 6
 NUM_DECODER_LAYERS = 6
 
-print(TGT_VOCAB_SIZE)
+print(TARGET_VOCAB_SIZE)
 
 with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/data/train_hindiToEnglish.pkl', 'rb') as file:
     train_iter = pd.read_pickle(file)[:150000]
@@ -135,7 +135,7 @@ def createMask(source, target):
     source_mask = torch.zeros((len_source, len_source), device=DEVICE).type(torch.bool)
     target_mask = generate_square_subsequent_mask(len_target)
 
-    source_padding_mask = (source==PAD).transpose(0, 1)
+    source_padding_mask = (source == PAD).transpose(0, 1)
     target_padding_mask = (target == PAD).transpose(0, 1)
 
     return source_mask, target_mask, source_padding_mask, target_padding_mask
@@ -189,6 +189,17 @@ class HindiToEngTransformer(nn.Module):
     def decode(self, target, memory, target_mask):
         self.transformer.decoder(self.positional_embedding(self.target_embedding(target)), memory, target_mask)
 
+
+# source_vocab_size, target_vocab_size, embed_size, num_head, num_enc_layers, num_dec_layers, dim_feedforward, dropout=0.1
+model = HindiToEngTransformer(SOURCE_VOCAB_SIZE, TARGET_VOCAB_SIZE, EMBED_SIZE, N_HEADS, NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, FFN_HID_DIM).to(DEVICE)
+loss = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, eps=1e-9)
+
+print(len(val_loader))
+
+
+def train_model(model, optimizer):
+    model.train()
 
 
 
