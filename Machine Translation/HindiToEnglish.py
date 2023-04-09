@@ -174,6 +174,26 @@ class HindiToEngTransformer(nn.Module):
         :param memory_key_padding_mask: the Tensor mask for memory keys per batch
         :return:
         """
+        x = self.positional_embedding(self.source_embedding(source))
+        y = self.positional_embedding(self.target_embedding(target))
+
+        out = self.transformer(x, y, source_mask, target_mask, None, source_padding_mask, target_padding_mask, memory_key_padding_mask)
+
+        out = self.fc_out(out)
+
+        return out
+
+    def encode(self,source, source_mask):
+        self.transformer.encoder(self.positional_embedding(self.source_embedding(source)), source_mask)
+
+    def decode(self, target, memory, target_mask):
+        self.transformer.decoder(self.positional_embedding(self.target_embedding(target)), memory, target_mask)
+
+
+
+
+
+
 
 
 
