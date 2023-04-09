@@ -24,13 +24,10 @@ import math, joblib
 from timeit import default_timer as timer
 from inltk.inltk import setup
 from pos_encoding import PositionalEmbedding
-
-# from transformer import TokenEmbedding
-# from transformer import TranslationTransformer, tensor_transform, sequential_transforms, create_mask, generate_square_subsequent_mask
-
 setup('hi')
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# DEVICE = 'cpu'
 print(DEVICE)
 
 SOURCE_LANG = 'hi'
@@ -54,19 +51,24 @@ def yield_tokens(data_iter, lang):
             yield token_transform[lang](data[language_index[lang]])
 
 
-
-with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/vocab/vocab.pkl', 'rb') as file:
+with open('vocab.pkl', 'rb') as file:
     vocab_transform = pickle.load(file)
 
 
-def tensor_transform(tokens):
-    return torch.cat((torch.tensor([SOS]), torch.tensor([tokens]), torch.tensor([EOS])))
+def tensor_transform(token_ids):
+    return torch.cat((torch.tensor([SOS]),
+                      torch.tensor(token_ids),
+                      torch.tensor([EOS])
+                      ))
 
 
 def sequential_transforms(*transforms):
     def func(text):
         for transform in transforms:
-            text = transform(text)
+            if transform == tokenize:
+                text = transform(text, 'hi')
+            else:
+                text = transform(text)
         return text
 
     return func
@@ -93,17 +95,17 @@ SOURCE_VOCAB_SIZE = len(vocab_transform[SOURCE_LANG])
 TARGET_VOCAB_SIZE = len(vocab_transform[TARGET_LANG])
 EMBED_SIZE = 512
 N_HEADS = 8
-FFN_HID_DIM = 2048
-BATCH_SIZE = 128
+FFN_HID_DIM = 512
+BATCH_SIZE = 16
 NUM_ENCODER_LAYERS = 6
 NUM_DECODER_LAYERS = 6
 
 print(TARGET_VOCAB_SIZE)
 
-with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/data/train_hindiToEnglish.pkl', 'rb') as file:
+with open('train_hindiToEnglish.pkl', 'rb') as file:
     train_iter = pd.read_pickle(file)[:150000]
 train_loader = DataLoader(train_iter, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
-with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/data/val_hindiToEnglish.pkl', 'rb') as file:
+with open('data/val_hindiToEnglish.pkl', 'rb') as file:
     val_iter = pd.read_pickle(file)
 val_loader = DataLoader(val_iter, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
 
@@ -123,17 +125,17 @@ class TokenEmbedding(nn.Module):
 
 
 def generate_square_subsequent_mask(size):
-    mask = torch.tril(torch.ones((size, size), device=DEVICE))
-    mask = mask.masked_fill(mask == 0, float('-inf')).masked_fill(mask==1, float(0.0))
+    mask = (torch.tril(torch.ones((size, size), device=DEVICE)) == 1)
+    mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
     return mask
 
 
 def createMask(source, target):
-    len_source = 0
-    len_target = 0
+    source_len = source.shape[0]
+    target_len = target.shape[0]
 
-    source_mask = torch.zeros((len_source, len_source), device=DEVICE).type(torch.bool)
-    target_mask = generate_square_subsequent_mask(len_target)
+    target_mask = generate_square_subsequent_mask(target_len)
+    source_mask = torch.zeros((source_len, source_len), device=DEVICE).type(torch.bool)
 
     source_padding_mask = (source == PAD).transpose(0, 1)
     target_padding_mask = (target == PAD).transpose(0, 1)
@@ -148,7 +150,7 @@ class HindiToEngTransformer(nn.Module):
         :param source_vocab_size: vocab size for input
         :param target_vocab_size: vocab size for output
         :param embed_size: the number of expected features in the encoder/decoder inputs (default=512)
-        :param num_head: the number of heads in the multi headattention models (default=8).
+        :param num_head: the number of heads in the multi head attention models (default=8).
         :param num_enc_layers: the number of sub-encoder-layers in the encoder (default=6).
         :param num_dec_layers: the number of sub-decoder-layers in the decoder (default=6).
         :param dim_feedforward: the dimension of the feedforward network model (default=2048).
@@ -164,7 +166,6 @@ class HindiToEngTransformer(nn.Module):
 
     def forward(self, source, target, source_mask, target_mask, source_padding_mask, target_padding_mask, memory_key_padding_mask):
         """
-
         :param source: the sequence to the encoder (required).
         :param target: the sequence to the decoder (required).
         :param source_mask: the additive mask for the src sequence (optional).
@@ -191,8 +192,9 @@ class HindiToEngTransformer(nn.Module):
 
 
 # source_vocab_size, target_vocab_size, embed_size, num_head, num_enc_layers, num_dec_layers, dim_feedforward, dropout=0.1
-model = HindiToEngTransformer(SOURCE_VOCAB_SIZE, TARGET_VOCAB_SIZE, EMBED_SIZE, N_HEADS, NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, FFN_HID_DIM).to(DEVICE)
-loss = nn.CrossEntropyLoss()
+model = HindiToEngTransformer(SOURCE_VOCAB_SIZE, TARGET_VOCAB_SIZE, EMBED_SIZE, N_HEADS, NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, FFN_HID_DIM)
+model = model.to(DEVICE)
+loss_fn = nn.CrossEntropyLoss(ignore_index=PAD)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, eps=1e-9)
 
 print(len(val_loader))
@@ -200,6 +202,69 @@ print(len(val_loader))
 
 def train_model(model, optimizer):
     model.train()
+
+    losses = 0
+    for idx, (source, target) in enumerate(train_loader):
+        source = source.to(DEVICE)
+        target = target.to(DEVICE)
+        target_in = target[:-1, :]
+        source_mask, target_mask, source_padding_mask, target_padding_mask = createMask(source, target_in)
+        logits = model(source, target_in, source_mask, target_mask, source_padding_mask, target_padding_mask, source_padding_mask)
+
+        target_out = target[1:, :]
+
+        optimizer.zero_grad()
+        loss = loss_fn(logits.reshape(-1, logits.shape[-1]), target_out.reshape(-1))
+        loss.backward()
+        optimizer.step()
+
+        losses += loss.item()
+
+        if (idx + 1) % 8 == 0:
+            print(
+                f"Step [{idx + 1}/{len(train_loader)}], "
+                f"Loss: {loss.item():.4f}"
+            )
+        elif (idx + 1) == len(train_loader):
+            print(
+                f"Step [{idx + 1}/{len(train_loader)}], "
+                f"Loss: {loss.item():.4f}"
+            )
+
+    return losses / len(list(train_loader))
+
+
+def evaluate(model):
+    model.eval()
+
+    losses = 0
+    for source, target in val_loader:
+        source = source.to(DEVICE)
+        target = target.to(DEVICE)
+        target_in = target[:-1, :]
+        source_mask, target_mask, source_padding_mask, target_padding_mask = createMask(source, target_in)
+        logits = model(source, target_in, source_mask, target_mask, source_padding_mask, target_padding_mask, source_padding_mask)
+        target_out = target[1:, :]
+        loss = loss_fn(logits.reshape(-1, logits.shape(-1)), target_out.reshape(-1))
+        losses += loss.item()
+
+    return losses/len(list(val_loader))
+
+
+NUM_EPOCHS = 20
+running_loss = float('inf')
+for epoch in range(1, NUM_EPOCHS + 1):
+    start_time = timer()
+    train_loss = train_model(model, optimizer)
+    end_time = timer()
+    val_loss = evaluate(model)
+    print(f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s")
+    if val_loss < running_loss:
+        print(f"running loss: {running_loss}, Val loss: {val_loss:.3f}")
+        print("Saving checkpoint.......")
+        checkpoint = {'state_dict': transformer.state_dict(), 'optimizer': optimizer.state_dict()}
+        torch.save(checkpoint, 'my_model.pth.tar')
+        running_loss = val_loss
 
 
 

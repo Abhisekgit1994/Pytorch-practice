@@ -244,9 +244,8 @@ if not load_model:
             checkpoint = {'state_dict': transformer.state_dict(), 'optimizer': optimizer.state_dict()}
             torch.save(checkpoint, 'my_model.pth.tar')
             running_loss = val_loss
-
-    else:
-        load_checkpoint(torch.load('my_model.pth.tar'))
+else:
+    load_checkpoint(torch.load('my_model.pth.tar'))
 
 
 def greedy_decode(model, source, source_mask, max_len, start_symbol):
