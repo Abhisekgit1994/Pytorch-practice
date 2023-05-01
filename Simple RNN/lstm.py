@@ -71,8 +71,11 @@ op = optim.Adam(model.parameters(), lr=lr)
 # train network
 for e in range(epochs):
     for idx, (x, y) in enumerate(train_loader):
+        print(x.shape)
         x = x.to(device).squeeze(1)
+        print(x.shape)
         y = y.to(device)
+        # print(y.shape)
 
         scores = model(x)
         loss = criterion(scores, y)

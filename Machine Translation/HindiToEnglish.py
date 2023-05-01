@@ -2,27 +2,29 @@
 # https://www.kaggle.com/datasets/vaibhavkumar11/hindi-english-parallel-corpus
 # https://huggingface.co/datasets/cfilt/iitb-english-hindi
 # https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html
+import joblib
+import math
 import pickle
 import time
+from timeit import default_timer as timer
+
 import numpy as np
 import pandas as pd
-from inltk.inltk import tokenize
 import spacy
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset, random_split
-import torch.optim as optim
 import torch.nn.functional as fn
+import torch.optim as optim
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from pos_encoding import PositionalEmbedding
+from inltk.inltk import setup
+from inltk.inltk import tokenize
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader, Dataset, random_split
 from torch.utils.tensorboard import SummaryWriter
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
-from torch.nn.utils.rnn import pad_sequence
-import math, joblib
-from timeit import default_timer as timer
-from inltk.inltk import setup
+
 from pos_encoding import PositionalEmbedding
 setup('hi')
 
@@ -51,7 +53,7 @@ def yield_tokens(data_iter, lang):
             yield token_transform[lang](data[language_index[lang]])
 
 
-with open('vocab.pkl', 'rb') as file:
+with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/vocab/vocab.pkl', 'rb') as file:
     vocab_transform = pickle.load(file)
 
 
@@ -96,20 +98,21 @@ TARGET_VOCAB_SIZE = len(vocab_transform[TARGET_LANG])
 EMBED_SIZE = 512
 N_HEADS = 8
 FFN_HID_DIM = 512
-BATCH_SIZE = 16
+BATCH_SIZE = 8
 NUM_ENCODER_LAYERS = 6
 NUM_DECODER_LAYERS = 6
 
 print(TARGET_VOCAB_SIZE)
 
-with open('train_hindiToEnglish.pkl', 'rb') as file:
-    train_iter = pd.read_pickle(file)[:150000]
+with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/data/train_hindiToEnglish.pkl', 'rb') as file:
+    train_iter = pd.read_pickle(file)[:500000]
+train_iter = [each for each in train_iter if len(each[0].split()) < 10]
+print(len(train_iter))
 train_loader = DataLoader(train_iter, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
-with open('data/val_hindiToEnglish.pkl', 'rb') as file:
+with open('D:/Abhi/COURSERA/Machine Translation data/Hindi To English/data/val_hindiToEnglish.pkl', 'rb') as file:
     val_iter = pd.read_pickle(file)
 val_loader = DataLoader(val_iter, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
-
-print(len(train_loader))
+print(len(val_loader))
 
 
 class TokenEmbedding(nn.Module):
@@ -159,7 +162,6 @@ class HindiToEngTransformer(nn.Module):
         super(HindiToEngTransformer, self).__init__()
         self.transformer = nn.Transformer(d_model=embed_size, nhead=num_head, num_encoder_layers=num_enc_layers, num_decoder_layers=num_dec_layers, dim_feedforward=dim_feedforward, dropout=dropout)
         self.fc_out = nn.Linear(embed_size, target_vocab_size)
-
         self.source_embedding = nn.Embedding(source_vocab_size, embed_size)
         self.target_embedding = nn.Embedding(target_vocab_size, embed_size)
         self.positional_embedding = PositionalEmbedding(max_len=5000, embed_size=embed_size)
@@ -184,7 +186,7 @@ class HindiToEngTransformer(nn.Module):
 
         return out
 
-    def encode(self,source, source_mask):
+    def encode(self, source, source_mask):
         self.transformer.encoder(self.positional_embedding(self.source_embedding(source)), source_mask)
 
     def decode(self, target, memory, target_mask):
@@ -197,10 +199,17 @@ model = model.to(DEVICE)
 loss_fn = nn.CrossEntropyLoss(ignore_index=PAD)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, eps=1e-9)
 
-print(len(val_loader))
+
+def load_checkpoint(checkpoint):
+    print("Loading checkpoint.....")
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
 
 
-def train_model(model, optimizer):
+load_checkpoint(torch.load('my_model.pth.tar'))
+
+
+def train_model(model, optimizer, epoch):
     model.train()
 
     losses = 0
@@ -222,57 +231,64 @@ def train_model(model, optimizer):
 
         if (idx + 1) % 8 == 0:
             print(
+                f"Epoch [{epoch}/{NUM_EPOCHS}], "
                 f"Step [{idx + 1}/{len(train_loader)}], "
                 f"Loss: {loss.item():.4f}"
             )
         elif (idx + 1) == len(train_loader):
             print(
+                f"Epoch [{epoch}/{NUM_EPOCHS}], "
                 f"Step [{idx + 1}/{len(train_loader)}], "
                 f"Loss: {loss.item():.4f}"
             )
+        if (idx + 1) % 256 == 0:
+            print("Saving checkpoint during the epoch.......")
+            checkpoint = {'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}
+            torch.save(checkpoint, '../../Machine Translation data/Hindi To English/my_model.pth.tar')
 
     return losses / len(list(train_loader))
 
 
-def evaluate(model):
+def evaluate(model,epoch):
+    print("Running validation.....")
     model.eval()
-
     losses = 0
-    for source, target in val_loader:
+    for idx, (source, target) in enumerate(val_loader):
         source = source.to(DEVICE)
         target = target.to(DEVICE)
         target_in = target[:-1, :]
         source_mask, target_mask, source_padding_mask, target_padding_mask = createMask(source, target_in)
         logits = model(source, target_in, source_mask, target_mask, source_padding_mask, target_padding_mask, source_padding_mask)
         target_out = target[1:, :]
-        loss = loss_fn(logits.reshape(-1, logits.shape(-1)), target_out.reshape(-1))
+        loss = loss_fn(logits.reshape(-1, logits.shape[-1]), target_out.reshape(-1))
         losses += loss.item()
+        if (idx + 1) % 8 == 0:
+            print(
+                f"Epoch [{epoch}/{NUM_EPOCHS}], "
+                f"Step [{idx + 1}/{len(val_loader)}], "
+                f"Loss: {loss.item():.4f}"
+            )
+        elif (idx + 1) == len(train_loader):
+            print(
+                f"Epoch [{epoch}/{NUM_EPOCHS}], "
+                f"Step [{idx + 1}/{len(val_loader)}], "
+                f"Loss: {loss.item():.4f}"
+            )
 
-    return losses/len(list(val_loader))
+    return losses / len(list(val_loader))
 
 
-NUM_EPOCHS = 20
+NUM_EPOCHS = 8
 running_loss = float('inf')
 for epoch in range(1, NUM_EPOCHS + 1):
     start_time = timer()
-    train_loss = train_model(model, optimizer)
+    train_loss = train_model(model, optimizer, epoch)
     end_time = timer()
-    val_loss = evaluate(model)
+    val_loss = evaluate(model,epoch)
     print(f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s")
     if val_loss < running_loss:
         print(f"running loss: {running_loss}, Val loss: {val_loss:.3f}")
         print("Saving checkpoint.......")
-        checkpoint = {'state_dict': transformer.state_dict(), 'optimizer': optimizer.state_dict()}
-        torch.save(checkpoint, 'my_model.pth.tar')
+        checkpoint = {'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}
+        torch.save(checkpoint, '../../Machine Translation data/Hindi To English/my_model.pth.tar')
         running_loss = val_loss
-
-
-
-
-
-
-
-
-
-
-
