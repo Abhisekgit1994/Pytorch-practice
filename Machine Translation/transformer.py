@@ -28,7 +28,7 @@ TARGET_LANG = 'en'
 token_transform = {}
 vocab_transform = {}
 
-token_transform[SOURCE_LANG] = get_tokenizer('spacy', language='de_core_news_sm')
+token_transform[SOURCE_LANG] = get_tokenizer('spacy', language='de_core_web_sm')
 token_transform[TARGET_LANG] = get_tokenizer('spacy', language='en_core_web_sm')
 
 

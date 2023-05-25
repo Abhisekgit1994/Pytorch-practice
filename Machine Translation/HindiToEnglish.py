@@ -206,7 +206,7 @@ def load_checkpoint(checkpoint):
     optimizer.load_state_dict(checkpoint['optimizer'])
 
 
-load_checkpoint(torch.load('my_model.pth.tar'))
+load_checkpoint(torch.load('../../Machine Translation data/Hindi To English/my_model.pth.tar'))
 
 
 def train_model(model, optimizer, epoch):
