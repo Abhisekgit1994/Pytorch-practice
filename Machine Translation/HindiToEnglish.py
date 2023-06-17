@@ -7,7 +7,7 @@ import math
 import pickle
 import time
 from timeit import default_timer as timer
-
+import deepspeed
 import numpy as np
 import pandas as pd
 import spacy

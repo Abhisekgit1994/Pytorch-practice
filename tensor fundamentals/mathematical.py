@@ -28,23 +28,23 @@ z = x > 1
 print(z)
 
 # Matrix multiplication
-x1 = torch.rand((2, 5))
-x2 = torch.rand((5, 3))
-x3 = torch.mm(x1, x2)
-print(x3)
-x3 = x1.mm(x2)
-print(x3)
+# x1 = torch.rand((2, 5))
+# x2 = torch.rand((5, 3))
+# x3 = torch.mm(x1, x2)
+# print(x3)
+# x3 = x1.mm(x2)
+# print(x3)
 
 # Matrix power
-matrix = torch.rand(5, 5)
-print(matrix.matrix_power(2))
+# matrix = torch.rand(5, 5)
+# print(matrix.matrix_power(2))
 
 # element wise multiplication
-z = x * y
-print(z)
-
-z = torch.dot(x, y)
-print(z)
+# z = x * y
+# print(z)
+#
+# z = torch.dot(x, y)
+# print(z)
 
 # batch matrix multiplication
 batch = 32
@@ -61,13 +61,13 @@ print(out.shape)  # batch , m ,p
 # t2 = torch.rand((1, 5))
 # z = t1 - t2
 # print(z)
-
+x1 = torch.rand((2, 5))
 print(x1)
 sum_x = torch.sum(x1, dim=0)
 print(sum_x, sum_x.shape)
-values, idx = torch.max(x, dim=0)
+values, idx = torch.max(x1, dim=0)
 abs_x = torch.abs(x)
-z = torch.argmax(x, dim=0)
+z = torch.argmax(x1, dim=0)
 print(z)
 
 print(torch.sum(t1[0], dim=0))
