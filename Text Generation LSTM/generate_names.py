@@ -20,9 +20,6 @@ names = '\n'.join(names)
 print(all_chars.index('a'))
 
 
-# print(names[5])
-
-
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()

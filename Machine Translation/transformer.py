@@ -5,6 +5,7 @@ import numpy as np
 import spacy
 import torch
 import torch.nn as nn
+import torchtext
 from torch.utils.data import DataLoader, Dataset, random_split
 import torch.optim as optim
 import torch.nn.functional as fn
@@ -28,11 +29,8 @@ TARGET_LANG = 'en'
 token_transform = {}
 vocab_transform = {}
 
-token_transform[SOURCE_LANG] = get_tokenizer('spacy', language='de_core_web_sm')
+token_transform[SOURCE_LANG] = get_tokenizer('spacy', language='de_core_news_sm')
 token_transform[TARGET_LANG] = get_tokenizer('spacy', language='en_core_web_sm')
-
-
-# print(token_transform)
 
 
 def yield_tokens(data_iter, language):
@@ -74,13 +72,17 @@ class TranslationTransformer(nn.Module):
 
         self.transformer = nn.Transformer(d_model=embed_size, nhead=num_heads, num_encoder_layers=num_enc_layers, num_decoder_layers=num_dec_layers, dim_feedforward=dim_feedforward, dropout=dropout)
         self.output = nn.Linear(embed_size, target_vocab_size)  # use to convert embed size to number of vocab in the language
-
+        # Load pre-trained GloVe embeddings
+        # glove = torchtext.vocab.GloVe(name='6B', dim=300)
+        # embedding_layer = nn.Embedding.from_pretrained(glove.vectors)
+        # Each row represents a single word embedding that is initialized randomly drawn from a uniform distribution. nn.init_uniform between -1 to 1.
         self.source_embedding = nn.Embedding(source_vocab_size, embed_size)
         self.target_embedding = nn.Embedding(target_vocab_size, embed_size)
         self.positional_embedding = PositionalEmbedding(max_len=5000, embed_size=embed_size)
 
     def forward(self, source, target, source_mask, target_mask, source_padding, target_padding, memory_key_padding_mask):
         x = self.positional_embedding(self.source_embedding(source))
+        print(x.shape)
         y = self.positional_embedding(self.target_embedding(target))
 
         # forward(src, tgt, src_mask=None, tgt_mask=None, memory_mask=None, src_key_padding_mask=None, tgt_key_padding_mask=None, memory_key_padding_mask=None)
@@ -177,6 +179,10 @@ train_loader = DataLoader(train_iter, batch_size=BATCH_SIZE, collate_fn=collate_
 valid_iter = Multi30k(split='valid', language_pair=(SOURCE_LANG, TARGET_LANG))
 valid_loader = DataLoader(valid_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
 
+# for x, y in train_loader:
+#     print(y.shape)
+#     break
+
 
 def train_epoch(model, optimizer):
     model.train()
@@ -189,6 +195,7 @@ def train_epoch(model, optimizer):
         target_in = target[:-1, :]  # not taking the last column so that we will predict that using our model
         source_mask, target_mask, source_padding_mask, target_padding_mask = create_mask(source, target_in)
         logits = model(source, target_in, source_mask, target_mask, source_padding_mask, target_padding_mask, source_padding_mask)
+        print(logits.shape)
 
         optimizer.zero_grad()
         target_out = target[1:, :]
