@@ -50,7 +50,7 @@ def train(autoencoder, data, epochs=20):
     losses = []
     for epoch in range(epochs):
         for idx, (x, y) in enumerate(data):
-            x = x.to(device) # GPU
+            x = x.to(device)  # GPU
             opt.zero_grad()
             x_hat = autoencoder(x)
             loss = criterion(x, x_hat)
@@ -69,19 +69,18 @@ def train(autoencoder, data, epochs=20):
                     f"Step [{idx + 1}/{len(data)}], "
                     f"Loss: {loss.item():.4f}"
                 )
-        print("Loss at epoch", epoch+1, sum(losses)/len(losses))
+        print("Loss at epoch", epoch + 1, sum(losses) / len(losses))
     return autoencoder
 
 
-latent_dims = 3
-autoencoder = Autoencoder(latent_dims).to(device) # GPU
+latent_dims = 3  # convert to 3 dimensional latent space
+autoencoder = Autoencoder(latent_dims).to(device)  # GPU
 
 data = torch.utils.data.DataLoader(
-        torchvision.datasets.MNIST('./data',
-               transform=torchvision.transforms.ToTensor(),
-               download=True),
-        batch_size=64,
-        shuffle=True)
+    torchvision.datasets.MNIST('./data',
+                               transform=torchvision.transforms.ToTensor(),
+                               download=True),
+    batch_size=64,
+    shuffle=True)
 
 autoencoder = train(autoencoder, data)
-

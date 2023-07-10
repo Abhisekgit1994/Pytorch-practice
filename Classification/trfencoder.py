@@ -118,7 +118,6 @@ class Encoder(nn.Module):
         x = self.encoder(x)
         x = x.mean(dim=0)
         out = self.fc(x)
-
         return out
 
 
