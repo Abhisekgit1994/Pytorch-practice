@@ -18,7 +18,6 @@ import torch.nn as nn
 class PositionalEmbedding(nn.Module):
     def __init__(self, max_len, embed_size, n=10000):
         """
-
         :param seq_len: length of input sequence
         :param embed_size: embedding size
         """

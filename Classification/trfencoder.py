@@ -138,7 +138,7 @@ def train_epoch(model, optimizer, e):
         target = target.to(DEVICE)
 
         logits = model(source)
-        # print(logits.shape)
+
 
         loss = loss_fn(logits, target)
         optimizer.zero_grad()
