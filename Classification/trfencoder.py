@@ -106,7 +106,6 @@ class Encoder(nn.Module):
         self.embedding = nn.Embedding(self.vocab_size, self.embed_size)
         self.positional_embed = PositionalEmbedding(max_len=2000, embed_size=self.embed_size)
         assert self.embed_size % self.num_heads == 0, "number of heads must divide evenly into embedding size"
-
         self.layer = nn.TransformerEncoderLayer(d_model=self.embed_size, nhead=self.num_heads, dim_feedforward=self.dim_ffd, dropout=self.dropout)
         self.encoder = nn.TransformerEncoder(self.layer, num_layers=self.num_layers)
 
