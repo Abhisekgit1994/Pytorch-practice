@@ -18,6 +18,7 @@ import torch.nn as nn
 class PositionalEmbedding(nn.Module):
     def __init__(self, max_len, embed_size, n=10000):
         """
+
         :param seq_len: length of input sequence
         :param embed_size: embedding size
         """
@@ -42,7 +43,7 @@ class PositionalEmbedding(nn.Module):
         :return: Combine input with positional embedding and return
         """
         seq_len = x.size(1)
-        x = x + self.pe[:, :seq_len].detach()
+        x = x + torch.autograd.Variable(self.pe[:, :seq_len], requires_grad=False)
         return x
 
 

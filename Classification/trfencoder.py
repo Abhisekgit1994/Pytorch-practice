@@ -105,7 +105,6 @@ class Encoder(nn.Module):
 
         self.embedding = nn.Embedding(self.vocab_size, self.embed_size)
         self.positional_embed = PositionalEmbedding(max_len=2000, embed_size=self.embed_size)
-        nn.init.trunc_normal_(self.positional_embed, std=0.2)
         assert self.embed_size % self.num_heads == 0, "number of heads must divide evenly into embedding size"
 
         self.layer = nn.TransformerEncoderLayer(d_model=self.embed_size, nhead=self.num_heads, dim_feedforward=self.dim_ffd, dropout=self.dropout)
@@ -128,7 +127,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), e
 
 
 def train_epoch(model, optimizer, e):
-    print("training started for epoch", epoch)
+    print("training started for epoch", e)
     model.train()
 
     losses = 0
