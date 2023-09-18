@@ -37,6 +37,7 @@ def yield_tokens(data_iter, language):
     language_index = {SOURCE_LANG: 0, TARGET_LANG: 1}
 
     for data in data_iter:
+        # print(token_transform[language](data[language_index[language]]))
         yield token_transform[language](data[language_index[language]])
 
 
@@ -46,6 +47,7 @@ special_symbols = ['<PAD>', '<UNK>', '<SOS>', '<EOS>']
 for lang in [SOURCE_LANG, TARGET_LANG]:
     # train data iterator
     train_iter = Multi30k(split='train', language_pair=(SOURCE_LANG, TARGET_LANG))
+    # print(train_iter[0])
     # create torch text's vocab object
     vocab_transform[lang] = build_vocab_from_iterator(yield_tokens(train_iter, lang), min_freq=1, specials=special_symbols, special_first=True)
 
@@ -53,6 +55,7 @@ for lang in [SOURCE_LANG, TARGET_LANG]:
     vocab_transform[lang].set_default_index(UNK)
 
 print(vocab_transform)
+exit()
 
 
 class TokenEmbedding(nn.Module):
